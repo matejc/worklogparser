@@ -16,27 +16,27 @@ Sample::
 
 Explanation of sample:
 
-    **[october]**:
+    **[october]**
 
         month tag
 
-    **1 = 10..17:30**:
+    **1 = 10..17:30**
 
-        **1**:
+        **1**
             day number in the month
-        **10..17:30**:
+        **10..17:30**
             hours from 10 to 17:30
 
 
 Samples of hours (after the equals sign):
 
-    **10..17:30**:
+    **10..17:30**
         from 10 to 17:30
 
-    **8**:
+    **8**
         just a number, number of hours
 
-    **0.5+3.5+15..17:30**:
+    **0.5+3.5+15..17:30**
         translates to 6.5h
 
 
