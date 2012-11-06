@@ -1,8 +1,9 @@
-import sys
+#!/usr/bin/python
+
+import os
 import re
 import string
-
-FILE_PATH = "/home/matej/Dropbox/matej/workarea/nw.work"
+import sys
 
 
 class NoDayInit(Exception):
@@ -146,9 +147,22 @@ def parse_file(filepath, arg_month, arg_day):
 
 arg_month = None
 arg_day = None
-if len(sys.argv) > 1:
-    arg_month = sys.argv[1]
-    if len(sys.argv) > 2:
-        arg_day = sys.argv[2]
+arg_path = None
 
-parse_file(FILE_PATH, arg_month, arg_day)
+
+def print_usage():
+    print "Usage: <FILE_PATH> [MONTH [DAY]]"
+
+
+if len(sys.argv) > 1:
+    arg_path = sys.argv[1]
+    if not os.path.exists(arg_path):
+        raise Exception("File does not exists!")
+    if len(sys.argv) > 2:
+        arg_month = sys.argv[2]
+        if len(sys.argv) > 3:
+            arg_day = sys.argv[3]
+else:
+    print_usage()
+
+parse_file(arg_path, arg_month, arg_day)

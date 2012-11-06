@@ -42,7 +42,7 @@ Samples of hours (after the equals sign):
 
 Command example::
 
-    python work.py october
+    python work.py /path/to/work.log october
 
 
 Command Output::
@@ -52,7 +52,3 @@ Command Output::
         day 2, 4.0hrs
     } month: october, total days: 2, total hours: 11.5
 
-
-Known Issues::
-
-    Work log file is hardcoded, will fix eventually
