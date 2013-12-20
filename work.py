@@ -1,9 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
-import os
 import re
 import string
-import sys
+import argparse
 
 
 class NoDayInit(Exception):
@@ -46,6 +45,16 @@ def gethours(inputstr):
     return hours
 
 
+def getdays(inputstr):
+    hours = []
+    nums = inputstr.split('..')
+    if len(nums) == 2:
+        begin = int(nums[0])
+        end = int(nums[1])
+        hours = range(begin, end + 1, 1)
+    return hours
+
+
 def dayandhours(line):
     day_end = line.find('=')
     try:
@@ -70,11 +79,7 @@ def print_end(month, days, hours):
     )
 
 
-def parse_file(filepath, arg_month, arg_day):
-    """
-        TODO:
-        - work.py <filename> [month] [day]
-    """
+def parse_file(filepath, arg_month, arg_days, is_html):
     i_month = None
     i_months = 0
     i_days = 0
@@ -82,61 +87,78 @@ def parse_file(filepath, arg_month, arg_day):
     daysinmonth = 0
     hoursinmonth = 0.0
     in_month = False
-    arg_day = int(arg_day) if arg_day else 0
-    dayfound = False
+    day_range = getdays(arg_days)
+    day_range = day_range if day_range else [0]
+    is_day_range = arg_days != ''
+
+    if is_html:
+        print "<ul>"
 
     with open(filepath) as workfile:
-        for line in workfile:
+        for arg_day in day_range:
+            if workfile.tell() != 0:
+                workfile.seek(0)
 
-            try:
-                is_month = re.search("^\s*\[.+\]\s*$", line)
-                is_day = re.search("^\s*\d*\s*=\s*.+$", line)
+            dayfound = False
+            for line in workfile:
 
-                if dayfound:
-                    if is_month or is_day:
-                        break
-                    else:
-                        print string.rstrip(line)
+                try:
+                    is_month = re.search("^\s*\[.+\]\s*$", line)
+                    is_day = re.search("^\s*\d*\s*=\s*.+$", line)
+
+                    if dayfound:
+                        if is_month or is_day:
+                            break
+                        else:
+                            if is_html:
+                                print "<li>{}</li>".format(string.strip(line))
+                            else:
+                                print string.rstrip(line)
+                            continue
+
+                    # search for month
+                    if is_month:
+                        line = rm_whitespace(line)
+                        if not i_months == 0:
+                            if in_month and not is_day_range:
+                                print_end(i_month, daysinmonth, hoursinmonth)
+                            daysinmonth = 0
+                            hoursinmonth = 0.0
+                            i_month = line[1:-1]
+                            in_month = not arg_month or i_month == arg_month
+                            if in_month and not is_day_range:
+                                print "{0} {{".format(i_month)
+                        else:
+                            i_month = line[1:-1]
+                            in_month = not arg_month or i_month == arg_month
+                            if in_month and not is_day_range:
+                                print "{0} {{".format(i_month)
+
+                        i_months += 1
                         continue
 
-                # search for month
-                if is_month:
-                    line = rm_whitespace(line)
-                    if not i_months == 0:
-                        if in_month and not arg_day:
-                            print_end(i_month, daysinmonth, hoursinmonth)
-                        daysinmonth = 0
-                        hoursinmonth = 0.0
-                        i_month = line[1:-1]
-                        in_month = not arg_month or i_month == arg_month
-                        if in_month and not arg_day:
-                            print "{0} {{".format(i_month)
-                    else:
-                        i_month = line[1:-1]
-                        in_month = not arg_month or i_month == arg_month
-                        if in_month and not arg_day:
-                            print "{0} {{".format(i_month)
-
-                    i_months += 1
-                    continue
-
-                # search for day init string
-                if in_month and is_day:
-                    line = rm_whitespace(line)
-                    day, hours = dayandhours(line)
-                    if day == arg_day:
-                        dayfound = True
+                    # search for day init string
+                    if in_month and is_day:
+                        line = rm_whitespace(line)
+                        day, hours = dayandhours(line)
+                        if day == arg_day:
+                            dayfound = True
+                            if is_html:
+                                print "<p><strong>day {0}, {1}hrs</p></strong>".format(day, hours)
+                            continue
+                        i_days += 1
+                        daysinmonth += 1
+                        i_hours += hours
+                        hoursinmonth += hours
+                        if arg_day == 0:
+                            print "\tday {0}, {1}hrs".format(day, hours)
                         continue
-                    i_days += 1
-                    daysinmonth += 1
-                    i_hours += hours
-                    hoursinmonth += hours
-                    if not arg_day:
-                        print "\tday {0}, {1}hrs".format(day, hours)
+
+                except NoDayInit:
                     continue
 
-            except NoDayInit:
-                continue
+    if is_html:
+        print "</ul>"
 
     if in_month and not arg_day:
         print_end(i_month, daysinmonth, hoursinmonth)
@@ -145,24 +167,16 @@ def parse_file(filepath, arg_month, arg_day):
         print_end(arg_month, i_days, i_hours)
 
 
-arg_month = None
-arg_day = None
-arg_path = None
+parser = argparse.ArgumentParser(description="WorkLogParser")
+parser.add_argument('filepath', metavar='FILEPATH', type=str,
+    help="Work log file to parse.")
+parser.add_argument('month', metavar='MONTH', type=str,
+    help="Retrieve content by section/month (ex: november).")
+parser.add_argument('-d', '--day_range', metavar='DAY_RANGE', type=str, default='',
+    help="Retrieve content by day range in section/month (ex: 2..16).")
+parser.add_argument('--html', action="store_true",
+    help="Export as HTML.")
 
+args = parser.parse_args()
 
-def print_usage():
-    print "Usage: <FILE_PATH> [MONTH [DAY]]"
-
-
-if len(sys.argv) > 1:
-    arg_path = sys.argv[1]
-    if not os.path.exists(arg_path):
-        raise Exception("File does not exists!")
-    if len(sys.argv) > 2:
-        arg_month = sys.argv[2]
-        if len(sys.argv) > 3:
-            arg_day = sys.argv[3]
-else:
-    print_usage()
-
-parse_file(arg_path, arg_month, arg_day)
+parse_file(args.filepath, args.month, args.day_range, args.html)
