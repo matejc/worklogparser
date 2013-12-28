@@ -1,0 +1,44 @@
+<p><strong>
+    Work done in date range {{ stats['day_start'] }}th of {{ stats['month_start'] }} {{ stats['year_start'] }} - {{ stats['day_end'] }}th of {{ stats['month_end'] }} {{ stats['year_end'] }}:
+</strong></p>
+
+{% for month in months %}
+    {% for day in month['days'] %}
+        <dl>
+            <dt><strong>
+                {{ day['day'] }}th of {{ month['month'].capitalize() }}
+            </strong></dt>
+            <dd>
+            {% if day['hours'] %}
+                {{ day['hours'] }} hours
+            {% endif %}
+            {% if day['tags'] %}
+                [{{ ', '.join(day['tags']) }}]
+            {% endif %}
+            </dd>
+        </dl>
+    {% endfor %}
+{% endfor %}
+
+{% for tag in stats['tags'] %}
+<dl>
+    <dt>Tag: {{ tag }}</dt>
+    {% if stats['tags'][tag]['days'] %}
+    <dd>
+        {{stats['tags'][tag]['days']}} days
+    </dd>
+    {% endif %}
+    {% if stats['tags'][tag]['hours'] %}
+    <dd>
+        {{stats['tags'][tag]['hours']}} hours
+    </dd>
+    {% endif %}
+</dl>
+{% endfor %}
+
+<div><strong>
+    Total days: {{ stats['total_days'] }}
+</strong></div>
+<div><strong>
+    Total hours: {{ stats['total_hours'] }}
+</strong></div>

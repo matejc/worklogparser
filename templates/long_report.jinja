@@ -1,0 +1,29 @@
+<h4>
+    Work done in date range {{ stats['day_start'] }}th of {{ stats['month_start'] }} {{ stats['year_start'] }} - {{ stats['day_end'] }}th of {{ stats['month_end'] }} {{ stats['year_end'] }}
+</h4>
+
+{% for month in months %}
+    {% for day in month['days'] %}
+        <h4>
+            {{ day['day'] }}th of {{ month['month'].capitalize() }} {{ month['year'] }}
+        </h4>
+        <dl>
+        {% for text in day['text'] %}
+            {% if text['depth'] == 1 %}
+            <dt>{{ text['line'] }}</dt>
+            {% else %}
+            <dd>{{ text['line'] }}</dd>
+            {% endif %}
+        {% endfor %}
+        </dl>
+        <h6>
+        {% if day['hours'] %}
+            {{ day['hours'] }} hours
+        {% endif %}
+        {% if day['tags'] %}
+            [{{ ', '.join(day['tags']) }}]
+        {% endif %}
+        </h6>
+        </br>
+    {% endfor %}
+{% endfor %}

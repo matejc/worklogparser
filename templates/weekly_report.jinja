@@ -1,0 +1,37 @@
+<h4>
+    {{ config['fullname'] }} Weekly Report - {{ stats['day_start'] }}.{{ stats['month_num_start'] }}.{{ stats['year_start'] }} - {{ stats['day_end'] }}.{{ stats['month_num_end'] }}.{{ stats['year_end'] }}
+</h4>
+
+<h4>Work done this week:</h4></br>
+
+{% for month in months %}
+    {% for day in month['days'] %}
+        <h4>
+            {{ day['day'] }}th of {{ month['month'].capitalize() }} {{ month['year'] }}
+        </h4>
+        <dl>
+        {% for text in day['lines'] %}
+            {% if text['depth'] == 1 %}
+            <dt>{{ text['line'] }}</dt>
+            {% else %}
+            <dd>{{ text['line'] }}</dd>
+            {% endif %}
+        {% endfor %}
+        </dl>
+        <h6>
+        {% if day['hours'] %}
+            {{ day['hours'] }} hours
+        {% endif %}
+        {% if day['tags'] %}
+            [{{ ', '.join(day['tags']) }}]
+        {% endif %}
+        </h6>
+        </br>
+    {% endfor %}
+{% endfor %}
+
+<h4>Plans for next week:</h4></br>
+
+{% for todo in todos %}
+<div>{{ todo }}</div>
+{% endfor %}
