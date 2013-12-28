@@ -1,19 +1,4 @@
 #{"year": 2013, "fullname": "Matej Cotman"}
-[december]
-18 = 7 [ill, home]
-    Issue 122
-        fixed first bug
-    TODO: do some other stuff for issue 122
-19 = 5 [ill, home]
-    Issue 122
-        fixed second bug
-20 = 9..12+2
-    Issue 123
-        fixed first bug
-        fixed second bug
-25 = 0 [vacation]
-26 = 0 [vacation]
-#{"year":2014}
 [january]
 29 = 9..11
     work at home
@@ -36,3 +21,17 @@
 3 = 4
         Ticket 126
          written code
+[december]
+18 = 7 [ill, home]
+    Issue 122
+        fixed first bug
+    TODO: do some other stuff for issue 122
+19 = 5 [ill, home]
+    Issue 122
+        fixed second bug
+20 = 9..12+2
+    Issue 123
+        fixed first bug
+        fixed second bug
+25 = 0 [vacation]
+26 = 0 [vacation]
