@@ -3,7 +3,9 @@
 import argparse
 import calendar
 import json
+import os
 import re
+import sys
 import traceback
 
 
@@ -179,7 +181,7 @@ def parse_file(filepath):
                         ]
         except:
             traceback.print_exc()
-            print 'EXCEPTION ON LINE: {}, TEXT: "{}"'.format(
+            print >> sys.stderr, 'EXCEPTION ON LINE: {}, TEXT: "{}"'.format(
                 line_no,
                 line_text.strip()
             )
@@ -317,9 +319,12 @@ def export_json_by(root, month_range, day, day_count, minified=False):
 
 def export_template_by(root, config, template, month_range, day, day_count,
         group_todos=False):
-    from jinja2 import Environment, FileSystemLoader
-    env = Environment(loader=FileSystemLoader('templates'))
-    jinja_template = env.get_template(template)
+    from jinja2 import Environment, PackageLoader, Template
+    if os.path.exists(template):
+        jinja_template = Template(open(template).read())
+    else:
+        env = Environment(loader=PackageLoader('worklogparser', 'templates'))
+        jinja_template = env.get_template(template)
 
     months = filter_by(root, month_range, day, day_count)
 
@@ -337,70 +342,75 @@ def export_template_by(root, config, template, month_range, day, day_count,
     )
 
 
-parser = argparse.ArgumentParser(description='WorkLogParser')
-parser.add_argument('filepath', metavar='FILEPATH', type=str,
-    help='Work log file to parse')
-parser.add_argument('-m', '--month', metavar='MONTH', type=str,
-    help='Retrieve content by (start) month (ex: november)')
-parser.add_argument(
-    '-e', '--end-month',
-    metavar='END_MONTH', type=str, default=None,
-    help='Retrieve content from MONTH to END_MONTH month (ex: december)'
-)
-parser.add_argument(
-    '-d', '--day', metavar='DAY', type=int, default=None,
-    help='Retrieve content by (start) day in month (ex: 2)'
-)
-parser.add_argument(
-    '-c', '--day-count', metavar='DAY_COUNT', type=int, default=None,
-    help='Retrieve content by day range from DAY inclusive to DAY+DAY_COUNT '
-    'exclusive in month'
-)
-parser.add_argument(
-    '-j', '--json', action='store_true',
-    help='Export to stdout as JSON format'
-)
-parser.add_argument(
-    '-jm', '--json-min', action='store_true',
-    help='Export to stdout as JSON format (minified)'
-)
-parser.add_argument(
-    '-t', '--template', type=str,
-    help='Export to stdout by this Jinja2 template file'
-)
-parser.add_argument(
-    '-g', '--group-todos', type=str,
-    help='Group all "TODO:*" lines to be accessed in template file'
-)
-args = parser.parse_args()
+def main():
+    parser = argparse.ArgumentParser(description='WorkLogParser')
+    parser.add_argument('filepath', metavar='FILEPATH', type=str,
+        help='Work log file to parse')
+    parser.add_argument('-m', '--month', metavar='MONTH', type=str,
+        help='Retrieve content by (start) month (ex: november)')
+    parser.add_argument(
+        '-e', '--end-month',
+        metavar='END_MONTH', type=str, default=None,
+        help='Retrieve content from MONTH to END_MONTH month (ex: december)'
+    )
+    parser.add_argument(
+        '-d', '--day', metavar='DAY', type=int, default=None,
+        help='Retrieve content by (start) day in month (ex: 2)'
+    )
+    parser.add_argument(
+        '-c', '--day-count', metavar='DAY_COUNT', type=int, default=None,
+        help='Retrieve content by day range from DAY inclusive to DAY+DAY_COUNT '
+        'exclusive in month'
+    )
+    parser.add_argument(
+        '-j', '--json', action='store_true',
+        help='Export to stdout as JSON format'
+    )
+    parser.add_argument(
+        '-jm', '--json-min', action='store_true',
+        help='Export to stdout as JSON format (minified)'
+    )
+    parser.add_argument(
+        '-t', '--template', type=str,
+        help='Export to stdout by this Jinja2 template file'
+    )
+    parser.add_argument(
+        '-g', '--group-todos', type=str,
+        help='Group all "TODO:*" lines to be accessed in template file'
+    )
+    args = parser.parse_args()
 
-root, configuration = parse_file(args.filepath)
+    root, configuration = parse_file(args.filepath)
 
-if args.month:
-    month_range = (args.month, args.end_month)
+    if args.month:
+        month_range = (args.month, args.end_month)
 
-    if args.day:
-        day = args.day
-        day_count = args.day_count
+        if args.day:
+            day = args.day
+            day_count = args.day_count
 
-    else:  # export whole month(s)
+        else:  # export whole month(s)
+            day = None
+            day_count = None
+
+    else:  # export all
+        month_range = (None, None)
         day = None
         day_count = None
 
-else:  # export all
-    month_range = (None, None)
-    day = None
-    day_count = None
+    if args.json or args.json_min:
+        print export_json_by(
+            root, month_range, day, day_count,
+            minified=args.json_min
+        )
 
-if args.json or args.json_min:
-    print export_json_by(
-        root, month_range, day, day_count,
-        minified=args.json_min
-    )
+    elif args.template:
+        print export_template_by(
+            root, configuration,
+            args.template, month_range, day, day_count,
+            group_todos=True if 'group_todos' in args else False
+        )
 
-elif args.template:
-    print export_template_by(
-        root, configuration,
-        args.template, month_range, day, day_count,
-        group_todos=True if 'group_todos' in args else False
-    )
+
+if __name__ == "__main__":
+    main()
