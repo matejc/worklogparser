@@ -58,9 +58,9 @@ Tags (after hours):
 
 Command line options:
 
-    **worklogparser [-h] [-m MONTH] [-e END_MONTH] [-d DAY] [-c DAY_COUNT]
+    **worklogparser** [-h] [-m MONTH] [-e END_MONTH] [-d DAY] [-c DAY_COUNT]
                      [-j] [-jm] [-t TEMPLATE] [-g GROUP_TODOS]
-                     FILEPATH**
+                     FILEPATH
 
     **-h, --help**            show this help message and exit
     **-m MONTH, --month MONTH**:
@@ -87,12 +87,12 @@ Command example - weekly report::
     worklogparser ./work-2013.txt --month december \
         --day 16 --day-count 7 --template weekly_report.jinja
 
-    Explanation:
-        *./work-2013.txt* is a log file
-        *--month december* where to start the month parsing
-        *--day 16* which day to start parsing in month
-        *--day-count 7* 7 days is one week
-        *--template weekly_report.jinja* included weekly HTML template output
+Explanation:
+    *./work-2013.txt* is a log file
+    *--month december* where to start the month parsing
+    *--day 16* which day to start parsing in month
+    *--day-count 7* 7 days is one week
+    *--template weekly_report.jinja* included weekly HTML template output
 
 
 Command example - JSON::
@@ -100,5 +100,5 @@ Command example - JSON::
     worklogparser ./work-2013.txt --month december \
         --day 16 --day-count 7 --json
 
-    Explanation:
-        *--json* raw output of JSON without any template
+Explanation:
+    *--json* raw output of JSON without any template
